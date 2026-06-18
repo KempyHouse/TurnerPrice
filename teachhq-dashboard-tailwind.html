@@ -25,8 +25,18 @@
 </style>
 <style>
   body{font-family:"Lato",system-ui,sans-serif;}
+  #mxTable{table-layout:fixed;width:100%;min-width:1180px;}
+  .mx-id{width:240px;}
+  .mx-site{width:180px;}
+  .mx-sum{width:116px;}
+  .mx-clabel{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .mx-compact td,.mx-compact th{padding-top:.3rem;padding-bottom:.3rem;}
   .mx-compact .mx-cell{height:1.4rem;width:1.4rem;}
+  /* compact mode: content-width grid + 45° angled course headers + narrow columns */
+  #mxTable.mx-compact{width:max-content;min-width:0;}
+  .mx-compact .mx-course{width:54px;}
+  .mx-compact thead th.mx-course{height:108px;vertical-align:bottom;padding-left:0;padding-right:0;}
+  .mx-compact thead th.mx-course .mx-clabel{display:inline-block;width:0;overflow:visible;white-space:nowrap;text-overflow:clip;transform:rotate(-45deg);transform-origin:left bottom;margin-left:50%;}
 </style>
 </head>
 <body class="bg-[#fdfdfc] text-slate-800">
@@ -458,24 +468,18 @@
 
       <!-- ===================== TRAINING MATRIX ===================== -->
       <section id="matrixSection" class="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-panel">
-        <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 class="text-lg font-bold text-slatecard">Training matrix</h2>
-            <p class="mt-0.5 text-[13px] text-slate-500">Required training across the selected scope — who has completed what.</p>
-          </div>
-          <button onclick="exportMatrixCSV()" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slatecard shadow-sm transition hover:bg-paper">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Export to Excel
-          </button>
+        <div class="border-b border-slate-100 p-5">
+          <h2 class="text-lg font-bold text-slatecard">Training matrix</h2>
+          <p class="mt-0.5 text-[13px] text-slate-500">Required training across the selected scope — who has completed what.</p>
         </div>
 
         <!-- summary strip -->
         <div class="flex flex-wrap gap-x-6 gap-y-2 border-b border-slate-100 bg-slate-50/60 px-5 py-3 text-sm">
-          <span><b class="tabular-nums text-slatecard">10</b> <span class="text-slate-500">learners</span></span>
-          <span><b class="tabular-nums text-slatecard">5</b> <span class="text-slate-500">courses</span></span>
-          <span><b class="tabular-nums text-slatecard">49</b> <span class="text-slate-500">assignments</span></span>
-          <span><b class="tabular-nums text-emerald-600">64%</b> <span class="text-slate-500">complete</span></span>
-          <span><b class="tabular-nums text-[#E5484D]">18</b> <span class="text-slate-500">exceptions</span></span>
+          <span><b id="mxStatLearners" class="tabular-nums text-slatecard">10</b> <span class="text-slate-500">learners</span></span>
+          <span><b id="mxStatCourses" class="tabular-nums text-slatecard">10</b> <span class="text-slate-500">courses</span></span>
+          <span><b id="mxStatAssignments" class="tabular-nums text-slatecard">94</b> <span class="text-slate-500">assignments</span></span>
+          <span><b id="mxStatComplete" class="tabular-nums text-emerald-600">66%</b> <span class="text-slate-500">complete</span></span>
+          <span><b id="mxStatExceptions" class="tabular-nums text-[#E5484D]">26</b> <span class="text-slate-500">exceptions</span></span>
         </div>
 
         <!-- toolbar -->
@@ -502,8 +506,127 @@
           </div>
         </div>
 
-        <!-- legend -->
-        <div class="flex flex-wrap gap-x-4 gap-y-2 px-5 py-3 text-[12px] text-slate-500">
+        <!-- matrix -->
+        <div class="overflow-x-auto">
+          <table id="mxTable" class="border-separate border-spacing-0 text-sm">
+            <thead>
+              <tr class="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                <th class="mx-id sticky left-0 z-20 border-b border-slate-200 bg-white px-4 py-3 text-left">Learner</th>
+                <th class="mx-site sticky left-[240px] z-20 border-b border-r border-slate-200 bg-white px-4 py-3 text-left">Site</th>
+                <th class="mx-course border-b border-slate-200 px-1 py-3 text-center" title="Level 2 Food Safety &amp; Hygiene for Catering"><div class="mx-clabel">Food Safety</div></th>
+                <th class="mx-course border-b border-slate-200 px-1 py-3 text-center" title="Allergen Awareness (Natasha's Law)"><div class="mx-clabel">Allergen</div></th>
+                <th class="mx-course border-b border-slate-200 px-1 py-3 text-center" title="COSHH Essentials"><div class="mx-clabel">COSHH</div></th>
+                <th class="mx-course border-b border-slate-200 px-1 py-3 text-center" title="Manual Handling in School Kitchens"><div class="mx-clabel">Manual</div></th>
+                <th class="mx-course border-b border-slate-200 px-1 py-3 text-center" title="Safeguarding for School Support Staff"><div class="mx-clabel">Safeguarding</div></th>
+                <th class="mx-sum sticky right-0 z-20 border-b border-l border-slate-200 bg-white px-3 py-3 text-left">% complete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-name="Bernadette Kelly" data-site="All Saints' Primary" data-complete="80%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Bernadette Kelly</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">All Saints' Primary</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:80%"></i></div><span class="tabular-nums text-slate-500">80%</span></div></td>
+              </tr>
+              <tr data-name="James O'Connor" data-site="St Mary's High" data-complete="20%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">James O'Connor</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">St Mary's High</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="failed" title="Failed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:20%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">20%</span></div></td>
+              </tr>
+              <tr data-name="Sarah Whitfield" data-site="All Saints' Primary" data-complete="100%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Sarah Whitfield</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">All Saints' Primary</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-emerald-500" style="width:100%"></i></div><span class="tabular-nums text-slate-500">100%</span></div></td>
+              </tr>
+              <tr data-name="Tom Hughes" data-site="Central Kitchen" data-complete="10%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Tom Hughes</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Central Kitchen</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:10%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">10%</span></div></td>
+              </tr>
+              <tr data-name="Priya Patel" data-site="St Mary's High" data-complete="70%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Priya Patel</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">St Mary's High</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:70%"></i></div><span class="tabular-nums text-slate-500">70%</span></div></td>
+              </tr>
+              <tr data-name="Maria Santos" data-site="Sacred Heart" data-complete="100%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Maria Santos</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Sacred Heart</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-emerald-500" style="width:100%"></i></div><span class="tabular-nums text-slate-500">100%</span></div></td>
+              </tr>
+              <tr data-name="Kelly Adams" data-site="Sacred Heart" data-complete="40%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Kelly Adams</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Sacred Heart</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="failed" title="Failed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell text-slate-300" data-state="notassigned" title="Not assigned">—</span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:40%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">40%</span></div></td>
+              </tr>
+              <tr data-name="Daniel Owens" data-site="Holy Trinity" data-complete="80%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Daniel Owens</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Holy Trinity</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:80%"></i></div><span class="tabular-nums text-slate-500">80%</span></div></td>
+              </tr>
+              <tr data-name="Aisha Khan" data-site="Central Kitchen" data-complete="20%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Aisha Khan</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Central Kitchen</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:20%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">20%</span></div></td>
+              </tr>
+              <tr data-name="Mark Reilly" data-site="Holy Trinity" data-complete="80%">
+                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Mark Reilly</td>
+                <td class="sticky left-[240px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Holy Trinity</td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
+                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
+                <td class="mx-sum sticky right-0 z-10 border-b border-l border-slate-100 bg-white px-3 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-12 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:80%"></i></div><span class="tabular-nums text-slate-500">80%</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- legend (bottom) -->
+        <div class="flex flex-wrap gap-x-4 gap-y-2 border-t border-slate-100 px-5 py-3 text-[12px] text-slate-500">
           <span class="inline-flex items-center gap-1.5"><span class="inline-flex h-5 w-5 items-center justify-center rounded bg-emerald-50 text-emerald-600"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Completed</span>
           <span class="inline-flex items-center gap-1.5"><span class="inline-flex h-5 w-5 items-center justify-center rounded bg-amber-50 text-amber-600"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span> In progress</span>
           <span class="inline-flex items-center gap-1.5"><span class="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-white"></span> Not started</span>
@@ -512,127 +635,7 @@
           <span class="inline-flex items-center gap-1.5"><span class="inline-flex h-5 w-5 items-center justify-center rounded bg-red-50 text-[#E5484D]"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span> Failed</span>
           <span class="inline-flex items-center gap-1.5"><span class="text-slate-300">—</span> Not assigned</span>
         </div>
-
-        <!-- matrix -->
-        <div class="overflow-x-auto">
-          <table id="mxTable" class="w-full min-w-[920px] border-separate border-spacing-0 text-sm">
-            <thead>
-              <tr class="text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                <th class="sticky left-0 z-20 w-[170px] border-b border-slate-200 bg-white px-4 py-3 text-left">Learner</th>
-                <th class="sticky left-[170px] z-20 w-[150px] border-b border-r border-slate-200 bg-white px-4 py-3 text-left">Site</th>
-                <th class="border-b border-slate-200 px-3 py-3 text-center">Food Safety L2</th>
-                <th class="border-b border-slate-200 px-3 py-3 text-center" title="Allergen Awareness (Natasha's Law)">Allergen</th>
-                <th class="border-b border-slate-200 px-3 py-3 text-center">COSHH</th>
-                <th class="border-b border-slate-200 px-3 py-3 text-center">Manual Handling</th>
-                <th class="border-b border-slate-200 px-3 py-3 text-center">Safeguarding</th>
-                <th class="border-b border-l border-slate-200 px-4 py-3 text-left">% complete</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr data-name="Bernadette Kelly" data-site="All Saints' Primary" data-complete="80%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Bernadette Kelly</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">All Saints' Primary</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:80%"></i></div><span class="tabular-nums text-slate-500">80%</span></div></td>
-              </tr>
-              <tr data-name="James O'Connor" data-site="St Mary's High" data-complete="20%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">James O'Connor</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">St Mary's High</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="failed" title="Failed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:20%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">20%</span></div></td>
-              </tr>
-              <tr data-name="Sarah Whitfield" data-site="All Saints' Primary" data-complete="100%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Sarah Whitfield</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">All Saints' Primary</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-emerald-500" style="width:100%"></i></div><span class="tabular-nums text-slate-500">100%</span></div></td>
-              </tr>
-              <tr data-name="Tom Hughes" data-site="Central Kitchen" data-complete="10%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Tom Hughes</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Central Kitchen</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:10%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">10%</span></div></td>
-              </tr>
-              <tr data-name="Priya Patel" data-site="St Mary's High" data-complete="70%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Priya Patel</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">St Mary's High</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:70%"></i></div><span class="tabular-nums text-slate-500">70%</span></div></td>
-              </tr>
-              <tr data-name="Maria Santos" data-site="Sacred Heart" data-complete="100%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Maria Santos</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Sacred Heart</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-emerald-500" style="width:100%"></i></div><span class="tabular-nums text-slate-500">100%</span></div></td>
-              </tr>
-              <tr data-name="Kelly Adams" data-site="Sacred Heart" data-complete="40%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Kelly Adams</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Sacred Heart</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="failed" title="Failed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell text-slate-300" data-state="notassigned" title="Not assigned">—</span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:40%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">40%</span></div></td>
-              </tr>
-              <tr data-name="Daniel Owens" data-site="Holy Trinity" data-complete="80%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Daniel Owens</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Holy Trinity</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:80%"></i></div><span class="tabular-nums text-slate-500">80%</span></div></td>
-              </tr>
-              <tr data-name="Aisha Khan" data-site="Central Kitchen" data-complete="20%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Aisha Khan</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Central Kitchen</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="inprogress" title="In progress"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-red-50 text-[#E5484D]" data-state="overdue" title="Overdue"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-[#E5484D]" style="width:20%"></i></div><span class="tabular-nums font-bold text-[#E5484D]">20%</span></div></td>
-              </tr>
-              <tr data-name="Mark Reilly" data-site="Holy Trinity" data-complete="80%">
-                <td class="sticky left-0 z-10 border-b border-slate-100 bg-white px-4 py-2 font-semibold text-slatecard">Mark Reilly</td>
-                <td class="sticky left-[170px] z-10 border-b border-r border-slate-100 bg-white px-4 py-2 text-slate-500">Holy Trinity</td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-emerald-600" data-state="passed" title="Completed"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></td>
-                <td class="border-b border-slate-100 px-2 py-2 text-center"><span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md bg-amber-50 text-amber-600" data-state="duesoon" title="Due soon"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></td>
-                <td class="border-b border-l border-slate-100 px-4 py-2"><div class="flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100"><i class="block h-full rounded-full bg-teachhq" style="width:80%"></i></div><span class="tabular-nums text-slate-500">80%</span></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="border-t border-slate-100 px-5 py-3 text-[12px] text-slate-400">Sample data · drill-down into individual learner records (question-level results) comes next.</div>
+        <div class="px-5 pb-4 pt-2 text-[12px] text-slate-400">Sample data · drill-down into individual learner records (question-level results) comes next.</div>
       </section>
     </main>
   </div>
@@ -894,6 +897,67 @@
   function selectGroup(sel){var t=sel.options[sel.selectedIndex].text;document.getElementById('scopeTitle').textContent=t;document.getElementById('scopeChip').textContent='Group: '+t;}
 
   // ===== Training matrix =====
+  var MX_ST={p:'passed',i:'inprogress',n:'notstarted',o:'overdue',d:'duesoon',f:'failed',x:'notassigned'};
+  function mxChip(st){
+    var I={
+      passed:['bg-emerald-50 text-emerald-600','<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>','Completed'],
+      inprogress:['bg-amber-50 text-amber-600','<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>','In progress'],
+      overdue:['bg-red-50 text-[#E5484D]','<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>','Overdue'],
+      duesoon:['bg-amber-50 text-amber-600','<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>','Due soon'],
+      failed:['bg-red-50 text-[#E5484D]','<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>','Failed']
+    };
+    if(st==='notstarted') return '<span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white" data-state="notstarted" title="Assigned · not started"></span>';
+    if(st==='notassigned') return '<span class="mx-cell text-slate-300" data-state="notassigned" title="Not assigned">—</span>';
+    var c=I[st]; return '<span class="mx-cell inline-flex h-7 w-7 items-center justify-center rounded-md '+c[0]+'" data-state="'+st+'" title="'+c[2]+'">'+c[1]+'</span>';
+  }
+  var MX_EXTRA=[
+    {s:'Fire Safety',f:'Fire Safety Awareness'},
+    {s:'First Aid',f:'Emergency First Aid at Work'},
+    {s:'H&amp;S',f:'Health and Safety Essentials'},
+    {s:'HACCP',f:'HACCP Principles'},
+    {s:'Infection',f:'Infection Prevention and Control'}
+  ];
+  var MX_EXTRA_STATES=['ppdnp','onfxo','ppppp','nondn','pdppi','ppppp','npfxd','ppdpp','onino','pppdp'];
+  function mxAddCourses(){
+    var head=document.querySelector('#mxTable thead tr'); if(!head) return;
+    var sumTh=head.lastElementChild;
+    MX_EXTRA.forEach(function(c){
+      var th=document.createElement('th');
+      th.className='mx-course border-b border-slate-200 px-1 py-3 text-center';
+      th.title=c.f; th.innerHTML='<div class="mx-clabel">'+c.s+'</div>';
+      head.insertBefore(th,sumTh);
+    });
+    document.querySelectorAll('#mxTable tbody tr').forEach(function(tr,ri){
+      var codes=MX_EXTRA_STATES[ri]||'nnnnn', sumTd=tr.lastElementChild;
+      codes.split('').forEach(function(ch){
+        var td=document.createElement('td');
+        td.className='mx-course border-b border-slate-100 px-1 py-2 text-center';
+        td.innerHTML=mxChip(MX_ST[ch]); tr.insertBefore(td,sumTd);
+      });
+      var states=[].map.call(tr.querySelectorAll('.mx-cell'),function(c){return c.getAttribute('data-state');});
+      var assigned=states.filter(function(s){return s!=='notassigned';}).length;
+      var passed=states.filter(function(s){return s==='passed';}).length;
+      var pct=assigned?Math.round(passed/assigned*100):0;
+      tr.setAttribute('data-complete',pct+'%');
+      var bar=sumTd.querySelector('i'), num=sumTd.querySelector('span');
+      if(bar){ bar.style.width=pct+'%'; bar.className='block h-full rounded-full '+(pct>=80?'bg-emerald-500':(pct>=50?'bg-teachhq':'bg-[#E5484D]')); }
+      if(num){ num.className='tabular-nums '+(pct<50?'font-bold text-[#E5484D]':'text-slate-500'); num.textContent=pct+'%'; }
+    });
+    mxSummary();
+  }
+  function mxSummary(){
+    var rows=document.querySelectorAll('#mxTable tbody tr');
+    var courses=document.querySelectorAll('#mxTable thead .mx-course').length, tA=0,tP=0,ex=0;
+    rows.forEach(function(tr){
+      var s=[].map.call(tr.querySelectorAll('.mx-cell'),function(c){return c.getAttribute('data-state');});
+      tA+=s.filter(function(x){return x!=='notassigned';}).length;
+      tP+=s.filter(function(x){return x==='passed';}).length;
+      ex+=s.filter(function(x){return ['overdue','failed','notstarted','duesoon'].indexOf(x)>=0;}).length;
+    });
+    var set=function(id,v){var e=document.getElementById(id); if(e) e.textContent=v;};
+    set('mxStatLearners',rows.length); set('mxStatCourses',courses); set('mxStatAssignments',tA);
+    set('mxStatComplete',(tA?Math.round(tP/tA*100):0)+'%'); set('mxStatExceptions',ex);
+  }
   function filterMatrix(){
     var q=(document.getElementById('mxSearch').value||'').toLowerCase();
     var st=document.getElementById('mxStatus').value;
@@ -917,25 +981,11 @@
     document.getElementById('mxDensity-comfortable').className=(d==='compact')?off:on;
     document.getElementById('mxDensity-compact').className=(d==='compact')?on:off;
   }
-  function exportMatrixCSV(){
-    var head=['Learner','Site','Food Safety L2','Allergen Awareness','COSHH','Manual Handling','Safeguarding','% complete'];
-    var rows=[head];
-    document.querySelectorAll('#mxTable tbody tr').forEach(function(tr){
-      if(tr.style.display==='none') return;
-      var r=[tr.getAttribute('data-name'),tr.getAttribute('data-site')];
-      [].forEach.call(tr.querySelectorAll('.mx-cell'),function(c){r.push(c.getAttribute('data-state'));});
-      r.push(tr.getAttribute('data-complete'));
-      rows.push(r);
-    });
-    var csv=rows.map(function(r){return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-    a.download='training-matrix.csv'; a.click();
-  }
 
   // init
   switchWorkspace('my');
   setScope('trust');
+  mxAddCourses();
 </script>
 </body>
 </html>
