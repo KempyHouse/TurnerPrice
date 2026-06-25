@@ -22,8 +22,66 @@
     --shadow-cta-hover: 0 4px 12px rgba(2,132,199,0.24), 0 10px 24px rgba(2,132,199,0.16);
     --shadow-cta-active: 0 2px 6px rgba(2,132,199,0.18);
   }
+  /* notification drawer: staggered item entrance */
+  #notifList > button{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .55s cubic-bezier(0.16,1,0.3,1);}
+  #notifPanel.is-open #notifList > button{opacity:1;transform:translateY(0);}
+  #notifPanel.is-open #notifList > button:nth-child(1){transition-delay:.10s}
+  #notifPanel.is-open #notifList > button:nth-child(2){transition-delay:.16s}
+  #notifPanel.is-open #notifList > button:nth-child(3){transition-delay:.22s}
+  #notifPanel.is-open #notifList > button:nth-child(4){transition-delay:.28s}
+  #notifPanel.is-open #notifList > button:nth-child(5){transition-delay:.34s}
+  #notifPanel.is-open #notifList > button:nth-child(6){transition-delay:.40s}
+  #notifPanel.is-open #notifList > button:nth-child(n+7){transition-delay:.46s}
+  @media (prefers-reduced-motion: reduce){
+    #notifPanel,#notifOverlay,#notifList > button{transition-duration:.001ms !important;transition-delay:0ms !important;}
+  }
+  /* chat typing indicator */
+  .chat-typing{display:inline-flex;gap:4px;align-items:center}
+  .chat-typing i{width:6px;height:6px;border-radius:9999px;background:#94a3b8;display:inline-block;animation:chatDot 1s infinite ease-in-out}
+  .chat-typing i:nth-child(2){animation-delay:.15s}
+  .chat-typing i:nth-child(3){animation-delay:.30s}
+  @keyframes chatDot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+  /* sticky header: subtle surface shift on scroll (airy -> elevated) */
+  .site-header{
+    background: rgba(253,253,252,0.55);
+    border-bottom: 1px solid transparent;
+    box-shadow: 0 0 0 0 rgba(0,0,0,0);
+    backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+    padding-top: 1rem; padding-bottom: 1rem;
+    transition: background 200ms cubic-bezier(0.16,1,0.3,1),
+                border-color 200ms cubic-bezier(0.16,1,0.3,1),
+                box-shadow 200ms cubic-bezier(0.16,1,0.3,1),
+                padding 200ms cubic-bezier(0.16,1,0.3,1),
+                backdrop-filter 200ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .site-header.is-scrolled{
+    background: rgba(253,253,252,0.92);
+    border-bottom-color: rgba(61,81,91,0.10);
+    box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.04);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    padding-top: 0.5rem; padding-bottom: 0.5rem;
+  }
+  @media (prefers-reduced-motion: reduce){ .site-header{ transition-duration: .001ms !important; } }
 </style>
 <style>
+  html{scrollbar-gutter:stable;}
+  /* segmented controls — shared sliding-pill indicator */
+  .seg{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;padding:4px;border-radius:14px;}
+  .seg>button{position:relative;z-index:1;border:0;background:transparent;border-radius:10px;font-weight:700;color:#64748b;cursor:pointer;transition:color 160ms ease;}
+  .seg>button:hover{color:var(--color-slatecard);}
+  .seg__pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--segs));border-radius:10px;transition:transform 200ms cubic-bezier(0.22,1,0.36,1);will-change:transform;pointer-events:none;}
+  .seg[data-active="0"] .seg__pill{transform:translateX(0)}
+  .seg[data-active="1"] .seg__pill{transform:translateX(100%)}
+  .seg[data-active="2"] .seg__pill{transform:translateX(200%)}
+  .seg[data-active="3"] .seg__pill{transform:translateX(300%)}
+  .seg--brand{background:#fff;border:1px solid #e2e8f0;}
+  .seg--brand .seg__pill{background:var(--color-teachhq);box-shadow:0 1px 2px rgba(16,24,40,.12);}
+  .seg--brand>button.is-active{color:#fff;}
+  .seg--brand>button.is-active:hover{color:#fff;}
+  .seg--paper{background:var(--color-paper);}
+  .seg--paper .seg__pill{background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.06),0 4px 10px rgba(16,24,40,.08);}
+  .seg--paper>button.is-active{color:var(--color-slatecard);}
+  @media (prefers-reduced-motion: reduce){ .seg__pill{transition:none} }
   body{font-family:"Lato",system-ui,sans-serif;}
   #mxTable{table-layout:fixed;width:100%;min-width:1180px;}
   .mx-id{width:240px;}
@@ -48,7 +106,7 @@
   </div>
 
   <!-- ===== ROW 1 — utility bar (light weight) ===== -->
-  <header class="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-2.5 sm:gap-5 sm:px-6 lg:flex-nowrap lg:gap-6 lg:px-12">
+  <header id="appHeader" class="site-header sticky top-0 z-50 flex flex-wrap items-center gap-3 px-4 sm:gap-5 sm:px-6 lg:flex-nowrap lg:gap-6 lg:px-12">
     <a href="#" class="flex items-center gap-2.5 whitespace-nowrap text-xl font-black text-slatecard">
       <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-teachhq text-base font-black text-white">T</span>
       Teach <b class="text-teachhq">HQ</b>
@@ -59,21 +117,23 @@
       <button aria-label="Search" class="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-teachhq text-white transition hover:bg-teachhq-dark"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
     </div>
     <div class="ml-auto flex items-center gap-2.5 lg:ml-0">
-      <button aria-label="Notifications" class="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-paper text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#E5484D] px-1 text-[9px] font-bold leading-none text-white">1</span></button>
+      <button id="chatBtn" onclick="toggleChat()" aria-label="Help chat" class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-paper text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+      <button id="notifBell" onclick="toggleNotifications()" aria-label="Notifications" class="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-paper text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#E5484D] px-1 text-[9px] font-bold leading-none text-white" id="notifBadge">4</span></button>
       <span class="flex h-9 w-9 items-center justify-center rounded-full bg-slatecard text-[13px] font-bold text-white">EW</span>
     </div>
   </header>
 
   <!-- ===== ROW 2 — primary app nav (workspace switcher + sections) ===== -->
   <!-- ================= WORKSPACE: MY ================= -->
-  <div id="ws-my" class="flex flex-col items-start gap-6 px-4 pb-14 pt-2 sm:px-6 lg:flex-row lg:gap-8 lg:px-12">
+  <div id="ws-my" class="flex flex-col items-start gap-6 px-4 pb-14 pt-2 sm:px-6 lg:flex-row lg:items-stretch lg:gap-8 lg:px-12">
     <aside class="w-full lg:w-[300px] lg:flex-none">
-      <div class="lg:sticky lg:top-4">
+      <div class="lg:sticky lg:top-[84px]">
         <!-- workspace switcher (rail header) -->
-        <div class="mb-4 grid w-full grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-panel">
-          <button onclick="switchWorkspace('my')" class="rounded-lg bg-teachhq py-2 text-sm font-bold text-white shadow-sm">My</button>
-          <button onclick="switchWorkspace('team')" class="rounded-lg py-2 text-sm font-bold text-slate-500 hover:bg-paper hover:text-slatecard">Team</button>
-          <button onclick="switchWorkspace('admin')" class="rounded-lg py-2 text-sm font-bold text-slate-500 hover:bg-paper hover:text-slatecard">Admin</button>
+        <div class="ws-seg seg seg--brand mb-4 w-full text-sm shadow-panel" style="--segs:3" data-active="0">
+          <span class="seg__pill"></span>
+          <button onclick="switchWorkspace('my')" class="is-active py-2">My</button>
+          <button onclick="switchWorkspace('team')" class="py-2">Team</button>
+          <button onclick="switchWorkspace('admin')" class="py-2">Admin</button>
         </div>
         <!-- section nav -->
         <div class="rounded-xl bg-paper p-6">
@@ -84,7 +144,7 @@
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">My Account</a></li>
             <li><a href="#" class="block py-3.5 text-sm text-slatecard hover:text-teachhq">My Business</a></li>
           </ul>
-          <div class="mb-2.5 mt-5 text-xs font-bold uppercase tracking-[0.06em] text-slate-400">Browse</div>
+          <div class="mb-3 mt-6 border-t border-[#e7e4e0] pt-5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Browse</div>
           <ul>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Course Library</a></li>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Achievements</a></li>
@@ -110,15 +170,6 @@
           </div>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <div class="inline-flex items-center gap-2.5 rounded-full bg-sky-50 px-3 py-2 text-sm font-semibold text-teachhq-dark">
-            <span class="relative inline-flex h-7 w-7 flex-none items-center justify-center">
-              <svg class="h-7 w-7 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
-                <circle cx="18" cy="18" r="15" fill="none" stroke="#dbeafe" stroke-width="5"/>
-                <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="61.2"/>
-              </svg>
-            </span>
-            <span class="tabular-nums">35% complete</span>
-          </div>
           <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-teachhq px-5 py-3 text-sm font-bold text-white shadow-cta transition hover:-translate-y-px hover:bg-teachhq-dark hover:shadow-cta-hover focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-2 active:translate-y-0 active:shadow-cta-active">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/></svg>
             Schedule Course
@@ -126,17 +177,9 @@
         </div>
       </div>
 
-      <!-- hero alert -->
-      <div class="mb-5 flex flex-wrap items-center gap-3.5 rounded-[10px] border border-[#f6d6d6] border-l-4 border-l-[#E5484D] bg-[#fff3f3] px-4 py-3 text-[15px] text-[#7a2b2b]">
-        <span>You have <b class="text-[#E5484D]">12 training items</b> to complete — <b class="text-[#E5484D]">3 are overdue</b>, including your Food Allergy Awareness refresher.</span>
-        <span class="flex-1"></span>
-        <button class="inline-flex items-center gap-2 rounded-lg bg-[#E5484D] px-5 py-2.5 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#c93b40]"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>Review overdue</button>
-      </div>
-
       <div class="my-3 flex items-center gap-3">
         <h2 class="text-xs font-black uppercase tracking-[0.05em] text-slate-500">My training</h2>
         <span class="h-px flex-1 bg-slate-200"></span>
-        <span class="text-[11.5px] text-slate-400">updated 2 min ago</span>
       </div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
 
@@ -257,25 +300,26 @@
   </div>
 
   <!-- ================= WORKSPACE: TEAM ================= -->
-  <div id="ws-team" style="display:none" class="flex flex-col items-start gap-6 px-4 pb-14 pt-2 sm:px-6 lg:flex-row lg:gap-8 lg:px-12">
+  <div id="ws-team" style="display:none" class="flex flex-col items-start gap-6 px-4 pb-14 pt-2 sm:px-6 lg:flex-row lg:items-stretch lg:gap-8 lg:px-12">
     <aside class="w-full lg:w-[300px] lg:flex-none">
-      <div class="lg:sticky lg:top-4">
+      <div class="lg:sticky lg:top-[84px]">
         <!-- workspace switcher (rail header) -->
-        <div class="mb-4 grid w-full grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-panel">
-          <button onclick="switchWorkspace('my')" class="rounded-lg py-2 text-sm font-bold text-slate-500 hover:bg-paper hover:text-slatecard">My</button>
-          <button onclick="switchWorkspace('team')" class="rounded-lg bg-teachhq py-2 text-sm font-bold text-white shadow-sm">Team</button>
-          <button onclick="switchWorkspace('admin')" class="rounded-lg py-2 text-sm font-bold text-slate-500 hover:bg-paper hover:text-slatecard">Admin</button>
+        <div class="ws-seg seg seg--brand mb-4 w-full text-sm shadow-panel" style="--segs:3" data-active="1">
+          <span class="seg__pill"></span>
+          <button onclick="switchWorkspace('my')" class="py-2">My</button>
+          <button onclick="switchWorkspace('team')" class="is-active py-2">Team</button>
+          <button onclick="switchWorkspace('admin')" class="py-2">Admin</button>
         </div>
         <!-- section nav -->
         <div class="rounded-xl bg-paper p-6">
           <div class="mb-2.5 text-xs font-bold uppercase tracking-[0.06em] text-teachhq">Team Dashboard</div>
           <ul>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Team Overview</a></li>
-            <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Members</a></li>
+            <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Team Members</a></li>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Assignments</a></li>
             <li><a href="#" class="block py-3.5 text-sm text-slatecard hover:text-teachhq">Reports</a></li>
           </ul>
-          <div class="mb-2.5 mt-5 text-xs font-bold uppercase tracking-[0.06em] text-slate-400">Browse</div>
+          <div class="mb-3 mt-6 border-t border-[#e7e4e0] pt-5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Browse</div>
           <ul>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Course Library</a></li>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Achievements</a></li>
@@ -287,19 +331,17 @@
     </aside>
 
     <main class="min-w-0 flex-1">
-      <h1 class="text-2xl font-black text-slatecard">Individual Sites</h1>
+      <h1 id="pageTitle" class="text-2xl font-black text-slatecard">Site View</h1>
 
       <div class="my-4 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel-quiet lg:flex-row lg:items-center lg:justify-between lg:gap-6 xl:px-6">
         <div class="flex min-w-0 items-center gap-4">
           <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-slatecard text-lg font-bold text-white">EW</span>
           <div class="min-w-0">
-            <p id="scopeEyebrow" class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Trust view</p>
-            <h2 id="scopeTitle" class="mt-1 text-2xl font-black leading-tight text-slate-900">Bishop Wilkinson Catholic Education Trust</h2>
+            <h2 id="scopeTitle" class="text-2xl font-black leading-tight text-slate-900">Bishop Wilkinson Catholic Education Trust</h2>
             <p id="scopeMeta" class="mt-1 text-sm text-slate-500">48 schools · 3,940 users</p>
           </div>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <div class="inline-flex items-center gap-2.5 rounded-full bg-sky-50 px-3 py-2 text-sm font-semibold text-teachhq-dark"><span class="tabular-nums">81% compliant</span></div>
           <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-teachhq px-5 py-3 text-sm font-bold text-white shadow-cta transition hover:-translate-y-px hover:bg-teachhq-dark hover:shadow-cta-hover focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-2 active:translate-y-0 active:shadow-cta-active">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6"/></svg>
             Assign training
@@ -309,11 +351,12 @@
 
       <!-- scope switcher: Team / Site / Group / Trust -->
       <div class="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-panel sm:flex-row sm:items-center">
-        <div class="inline-flex flex-none rounded-xl bg-paper p-1">
-          <button id="scopeBtn-team" onclick="setScope('team')" class="rounded-lg px-4 py-1.5 text-sm font-bold text-slate-500 hover:text-slatecard">Team</button>
-          <button id="scopeBtn-site" onclick="setScope('site')" class="rounded-lg px-4 py-1.5 text-sm font-bold text-slate-500 hover:text-slatecard">Site</button>
-          <button id="scopeBtn-group" onclick="setScope('group')" class="rounded-lg px-4 py-1.5 text-sm font-bold text-slate-500 hover:text-slatecard">Group</button>
-          <button id="scopeBtn-trust" onclick="setScope('trust')" class="rounded-lg bg-white px-4 py-1.5 text-sm font-bold text-slatecard shadow-sm">Trust</button>
+        <div id="scopeSeg" class="seg seg--paper w-full flex-none text-sm sm:w-72" style="--segs:4" data-active="3">
+          <span class="seg__pill"></span>
+          <button id="scopeBtn-team" onclick="setScope('team')" class="py-1.5">Team</button>
+          <button id="scopeBtn-site" onclick="setScope('site')" class="py-1.5">Site</button>
+          <button id="scopeBtn-group" onclick="setScope('group')" class="py-1.5">Group</button>
+          <button id="scopeBtn-trust" onclick="setScope('trust')" class="is-active py-1.5">Trust</button>
         </div>
         <select id="scopeSel-site" onchange="selectSite(this)" class="hidden w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slatecard focus:outline-none focus:ring-2 focus:ring-teachhq sm:w-auto">
           <option>All Saints' Catholic Primary School — Lanchester</option>
@@ -324,17 +367,6 @@
           <option>St Mary's Catholic Primary School — Sunderland</option>
           <option>St Bede's Catholic Primary School — Newcastle</option>
         </select>
-        <select id="scopeSel-group" onchange="selectGroup(this)" class="hidden w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slatecard focus:outline-none focus:ring-2 focus:ring-teachhq sm:w-auto">
-          <option>Gateshead Primary Schools</option>
-          <option>All primaries (41)</option>
-          <option>All secondaries (5)</option>
-          <option>Durham schools</option>
-          <option>Sunderland / Washington schools</option>
-          <option>Northumberland schools</option>
-          <option>Primaries needing intervention</option>
-        </select>
-        <span id="scopeSel-trust" class="inline-flex items-center rounded-lg bg-paper px-3 py-2 text-sm font-semibold text-slatecard">All 48 schools</span>
-        <span id="scopeChip" class="rounded-full bg-sky-50 px-3 py-1.5 text-[12px] font-bold text-teachhq-dark sm:ml-auto">Trust: All 48 schools</span>
       </div>
 
       <!-- Blank Team dashboard (built out later) -->
@@ -355,7 +387,6 @@
       <div class="my-3 flex items-center gap-3">
         <h2 class="text-xs font-black uppercase tracking-[0.05em] text-slate-500">Operational overview</h2>
         <span class="h-px flex-1 bg-slate-200"></span>
-        <span id="scopeHeadingMeta" class="text-[11.5px] text-slate-400">48 schools</span>
       </div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
 
@@ -413,75 +444,6 @@
         </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-
-        <!-- Sites needing attention -->
-        <section class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-panel lg:col-span-2">
-          <div class="flex items-center justify-between p-5 pb-3">
-            <h2 class="text-lg font-bold text-slatecard">Sites needing attention</h2>
-            <a href="#" class="text-[13px] font-bold text-teachhq-dark">View all sites ›</a>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[520px] text-left text-sm">
-              <thead class="border-y border-slate-100 bg-slate-50/60 text-[11px] uppercase tracking-wide text-slate-500">
-                <tr><th class="px-5 py-2.5 font-bold">Site</th><th class="px-5 py-2.5 font-bold">Overdue</th><th class="px-5 py-2.5 font-bold">Due next mo</th><th class="px-5 py-2.5 font-bold">Never in</th><th class="px-5 py-2.5 font-bold">Risk</th></tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <tr><td class="px-5 py-3 font-semibold text-slatecard">St Mary's High</td><td class="px-5 py-3 font-bold tabular-nums text-[#E5484D]">14</td><td class="px-5 py-3 tabular-nums text-slate-500">22</td><td class="px-5 py-3 tabular-nums text-slate-500">3</td><td class="px-5 py-3"><span class="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-[#E5484D]">High</span></td></tr>
-                <tr><td class="px-5 py-3 font-semibold text-slatecard">Central Kitchen Hub</td><td class="px-5 py-3 font-bold tabular-nums text-[#E5484D]">9</td><td class="px-5 py-3 tabular-nums text-slate-500">11</td><td class="px-5 py-3 tabular-nums text-slate-500">2</td><td class="px-5 py-3"><span class="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-[#E5484D]">High</span></td></tr>
-                <tr><td class="px-5 py-3 font-semibold text-slatecard">Sacred Heart Primary</td><td class="px-5 py-3 font-bold tabular-nums text-amber-600">8</td><td class="px-5 py-3 tabular-nums text-slate-500">14</td><td class="px-5 py-3 tabular-nums text-slate-500">1</td><td class="px-5 py-3"><span class="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">Medium</span></td></tr>
-                <tr><td class="px-5 py-3 font-semibold text-slatecard">All Saints' Catholic Primary</td><td class="px-5 py-3 font-bold tabular-nums text-amber-600">7</td><td class="px-5 py-3 tabular-nums text-slate-500">18</td><td class="px-5 py-3 tabular-nums text-slate-500">2</td><td class="px-5 py-3"><span class="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">Medium</span></td></tr>
-                <tr><td class="px-5 py-3 font-semibold text-slatecard">Holy Trinity Primary</td><td class="px-5 py-3 font-bold tabular-nums text-slate-600">4</td><td class="px-5 py-3 tabular-nums text-slate-500">12</td><td class="px-5 py-3 tabular-nums text-slate-500">1</td><td class="px-5 py-3"><span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">Low</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- Login engagement -->
-        <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel">
-          <h2 class="text-lg font-bold text-slatecard">Login engagement</h2>
-          <p class="mt-1 text-[13px] text-slate-500">347 users across 5 sites</p>
-          <div class="mt-4 flex h-3 overflow-hidden rounded-full">
-            <div class="bg-teachhq" style="width:90%"></div>
-            <div class="bg-amber-400" style="width:7%"></div>
-            <div class="bg-[#E5484D]" style="width:3%"></div>
-          </div>
-          <ul class="mt-4 space-y-2.5 text-sm">
-            <li class="flex items-center justify-between"><span class="flex items-center gap-2 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-teachhq"></span>Active (30 days)</span><span class="font-bold tabular-nums text-slatecard">312 · 90%</span></li>
-            <li class="flex items-center justify-between"><span class="flex items-center gap-2 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>Inactive 30+ days</span><span class="font-bold tabular-nums text-slatecard">26 · 7%</span></li>
-            <li class="flex items-center justify-between"><span class="flex items-center gap-2 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-[#E5484D]"></span>Never logged in</span><span class="font-bold tabular-nums text-slatecard">9 · 3%</span></li>
-          </ul>
-        </section>
-
-        <!-- First-time pass quality -->
-        <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel lg:col-span-3">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-bold text-slatecard">First-time pass quality</h2>
-            <a href="#" class="text-[13px] font-bold text-teachhq-dark">Full report ›</a>
-          </div>
-          <div class="mt-4 grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
-            <div>
-              <div class="mb-2 text-[11px] font-black uppercase tracking-wide text-slate-400">Lowest pass — courses</div>
-              <ul class="divide-y divide-slate-100">
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">Allergen Awareness (Natasha's Law)</span><span class="shrink-0 font-bold tabular-nums text-[#E5484D]">58%</span></li>
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">Level 3 Food Safety (Supervisors)</span><span class="shrink-0 font-bold tabular-nums text-amber-600">64%</span></li>
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">COSHH Essentials</span><span class="shrink-0 font-bold tabular-nums text-amber-600">67%</span></li>
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">Fire Safety Awareness</span><span class="shrink-0 font-bold tabular-nums text-slate-600">71%</span></li>
-              </ul>
-            </div>
-            <div>
-              <div class="mb-2 text-[11px] font-black uppercase tracking-wide text-slate-400">Lowest pass — users</div>
-              <ul class="divide-y divide-slate-100">
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">James O'Connor</span> <span class="text-slate-400">· St Mary's High</span></span><span class="shrink-0 font-bold tabular-nums text-[#E5484D]">40%</span></li>
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">Tom Hughes</span> <span class="text-slate-400">· Central Kitchen</span></span><span class="shrink-0 font-bold tabular-nums text-amber-600">52%</span></li>
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">Kelly Adams</span> <span class="text-slate-400">· Sacred Heart</span></span><span class="shrink-0 font-bold tabular-nums text-amber-600">57%</span></li>
-                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">Priya Patel</span> <span class="text-slate-400">· St Mary's High</span></span><span class="shrink-0 font-bold tabular-nums text-slate-600">61%</span></li>
-              </ul>
-            </div>
-          </div>
-        </section>
-      </div>
-
       <!-- ===================== TRAINING MATRIX ===================== -->
       <section id="matrixSection" class="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-panel">
         <div class="border-b border-slate-100 p-5">
@@ -516,10 +478,6 @@
           <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slatecard">
             <input id="mxExceptions" type="checkbox" onchange="filterMatrix()" class="h-4 w-4 accent-[#E5484D]"> Show only exceptions
           </label>
-          <div class="ml-auto inline-flex rounded-lg bg-paper p-1 text-sm">
-            <button id="mxDensity-comfortable" onclick="setDensity('comfortable')" class="rounded-md bg-white px-3 py-1 font-bold text-slatecard shadow-sm">Comfortable</button>
-            <button id="mxDensity-compact" onclick="setDensity('compact')" class="rounded-md px-3 py-1 font-bold text-slate-500 hover:text-slatecard">Compact</button>
-          </div>
         </div>
 
         <!-- matrix -->
@@ -653,19 +611,89 @@
         </div>
         <div class="px-5 pb-4 pt-2 text-[12px] text-slate-400">Sample data · drill-down into individual learner records (question-level results) comes next.</div>
       </section>
+
+      <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+
+        <!-- Sites needing attention -->
+        <section class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-panel lg:col-span-2">
+          <div class="flex items-center justify-between p-5 pb-3">
+            <h2 class="text-lg font-bold text-slatecard">Sites needing attention</h2>
+            <a href="#" class="text-[13px] font-bold text-teachhq-dark">View all sites ›</a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[520px] text-left text-sm">
+              <thead class="border-y border-slate-100 bg-slate-50/60 text-[11px] uppercase tracking-wide text-slate-500">
+                <tr><th class="px-5 py-2.5 font-bold">Site</th><th class="px-5 py-2.5 font-bold">Overdue</th><th class="px-5 py-2.5 font-bold">Due next mo</th><th class="px-5 py-2.5 font-bold">Never in</th><th class="px-5 py-2.5 font-bold">Risk</th></tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr><td class="px-5 py-3 font-semibold text-slatecard">St Mary's High</td><td class="px-5 py-3 font-bold tabular-nums text-[#E5484D]">14</td><td class="px-5 py-3 tabular-nums text-slate-500">22</td><td class="px-5 py-3 tabular-nums text-slate-500">3</td><td class="px-5 py-3"><span class="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-[#E5484D]">High</span></td></tr>
+                <tr><td class="px-5 py-3 font-semibold text-slatecard">Central Kitchen Hub</td><td class="px-5 py-3 font-bold tabular-nums text-[#E5484D]">9</td><td class="px-5 py-3 tabular-nums text-slate-500">11</td><td class="px-5 py-3 tabular-nums text-slate-500">2</td><td class="px-5 py-3"><span class="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-[#E5484D]">High</span></td></tr>
+                <tr><td class="px-5 py-3 font-semibold text-slatecard">Sacred Heart Primary</td><td class="px-5 py-3 font-bold tabular-nums text-amber-600">8</td><td class="px-5 py-3 tabular-nums text-slate-500">14</td><td class="px-5 py-3 tabular-nums text-slate-500">1</td><td class="px-5 py-3"><span class="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">Medium</span></td></tr>
+                <tr><td class="px-5 py-3 font-semibold text-slatecard">All Saints' Catholic Primary</td><td class="px-5 py-3 font-bold tabular-nums text-amber-600">7</td><td class="px-5 py-3 tabular-nums text-slate-500">18</td><td class="px-5 py-3 tabular-nums text-slate-500">2</td><td class="px-5 py-3"><span class="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">Medium</span></td></tr>
+                <tr><td class="px-5 py-3 font-semibold text-slatecard">Holy Trinity Primary</td><td class="px-5 py-3 font-bold tabular-nums text-slate-600">4</td><td class="px-5 py-3 tabular-nums text-slate-500">12</td><td class="px-5 py-3 tabular-nums text-slate-500">1</td><td class="px-5 py-3"><span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">Low</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Login engagement -->
+        <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel">
+          <h2 class="text-lg font-bold text-slatecard">Login engagement</h2>
+          <p class="mt-1 text-[13px] text-slate-500">347 users across 5 sites</p>
+          <div class="mt-4 flex h-3 overflow-hidden rounded-full">
+            <div class="bg-teachhq" style="width:90%"></div>
+            <div class="bg-amber-400" style="width:7%"></div>
+            <div class="bg-[#E5484D]" style="width:3%"></div>
+          </div>
+          <ul class="mt-4 space-y-2.5 text-sm">
+            <li class="flex items-center justify-between"><span class="flex items-center gap-2 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-teachhq"></span>Active (30 days)</span><span class="font-bold tabular-nums text-slatecard">312 · 90%</span></li>
+            <li class="flex items-center justify-between"><span class="flex items-center gap-2 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>Inactive 30+ days</span><span class="font-bold tabular-nums text-slatecard">26 · 7%</span></li>
+            <li class="flex items-center justify-between"><span class="flex items-center gap-2 text-slate-600"><span class="h-2.5 w-2.5 rounded-full bg-[#E5484D]"></span>Never logged in</span><span class="font-bold tabular-nums text-slatecard">9 · 3%</span></li>
+          </ul>
+        </section>
+
+        <!-- First-time pass quality -->
+        <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel lg:col-span-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slatecard">First-time pass quality</h2>
+            <a href="#" class="text-[13px] font-bold text-teachhq-dark">Full report ›</a>
+          </div>
+          <div class="mt-4 grid grid-cols-1 gap-x-8 gap-y-2 md:grid-cols-2">
+            <div>
+              <div class="mb-2 text-[11px] font-black uppercase tracking-wide text-slate-400">Lowest pass — courses</div>
+              <ul class="divide-y divide-slate-100">
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">Allergen Awareness (Natasha's Law)</span><span class="shrink-0 font-bold tabular-nums text-[#E5484D]">58%</span></li>
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">Level 3 Food Safety (Supervisors)</span><span class="shrink-0 font-bold tabular-nums text-amber-600">64%</span></li>
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">COSHH Essentials</span><span class="shrink-0 font-bold tabular-nums text-amber-600">67%</span></li>
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3 text-slatecard">Fire Safety Awareness</span><span class="shrink-0 font-bold tabular-nums text-slate-600">71%</span></li>
+              </ul>
+            </div>
+            <div>
+              <div class="mb-2 text-[11px] font-black uppercase tracking-wide text-slate-400">Lowest pass — users</div>
+              <ul class="divide-y divide-slate-100">
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">James O'Connor</span> <span class="text-slate-400">· St Mary's High</span></span><span class="shrink-0 font-bold tabular-nums text-[#E5484D]">40%</span></li>
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">Tom Hughes</span> <span class="text-slate-400">· Central Kitchen</span></span><span class="shrink-0 font-bold tabular-nums text-amber-600">52%</span></li>
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">Kelly Adams</span> <span class="text-slate-400">· Sacred Heart</span></span><span class="shrink-0 font-bold tabular-nums text-amber-600">57%</span></li>
+                <li class="flex items-center justify-between py-2.5 text-sm"><span class="min-w-0 truncate pr-3"><span class="font-semibold text-slatecard">Priya Patel</span> <span class="text-slate-400">· St Mary's High</span></span><span class="shrink-0 font-bold tabular-nums text-slate-600">61%</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
       </div><!-- /scopeBody -->
     </main>
   </div>
 
   <!-- ================= WORKSPACE: ADMIN ================= -->
-  <div id="ws-admin" style="display:none" class="flex flex-col items-start gap-6 px-4 pb-14 pt-2 sm:px-6 lg:flex-row lg:gap-8 lg:px-12">
+  <div id="ws-admin" style="display:none" class="flex flex-col items-start gap-6 px-4 pb-14 pt-2 sm:px-6 lg:flex-row lg:items-stretch lg:gap-8 lg:px-12">
     <aside class="w-full lg:w-[300px] lg:flex-none">
-      <div class="lg:sticky lg:top-4">
+      <div class="lg:sticky lg:top-[84px]">
         <!-- workspace switcher (rail header) -->
-        <div class="mb-4 grid w-full grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-panel">
-          <button onclick="switchWorkspace('my')" class="rounded-lg py-2 text-sm font-bold text-slate-500 hover:bg-paper hover:text-slatecard">My</button>
-          <button onclick="switchWorkspace('team')" class="rounded-lg py-2 text-sm font-bold text-slate-500 hover:bg-paper hover:text-slatecard">Team</button>
-          <button onclick="switchWorkspace('admin')" class="rounded-lg bg-teachhq py-2 text-sm font-bold text-white shadow-sm">Admin</button>
+        <div class="ws-seg seg seg--brand mb-4 w-full text-sm shadow-panel" style="--segs:3" data-active="2">
+          <span class="seg__pill"></span>
+          <button onclick="switchWorkspace('my')" class="py-2">My</button>
+          <button onclick="switchWorkspace('team')" class="py-2">Team</button>
+          <button onclick="switchWorkspace('admin')" class="is-active py-2">Admin</button>
         </div>
         <!-- section nav -->
         <div class="rounded-xl bg-paper p-6">
@@ -676,7 +704,7 @@
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Compliance</a></li>
             <li><a href="#" class="block py-3.5 text-sm text-slatecard hover:text-teachhq">Settings</a></li>
           </ul>
-          <div class="mb-2.5 mt-5 text-xs font-bold uppercase tracking-[0.06em] text-slate-400">Browse</div>
+          <div class="mb-3 mt-6 border-t border-[#e7e4e0] pt-5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Browse</div>
           <ul>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Course Library</a></li>
             <li><a href="#" class="block border-b border-[#e7e4e0] py-3.5 text-sm text-slatecard hover:text-teachhq">Achievements</a></li>
@@ -688,19 +716,17 @@
     </aside>
 
     <main class="min-w-0 flex-1">
-      <h1 class="text-2xl font-black text-slatecard">Platform Overview</h1>
+      <h1 class="text-2xl font-black text-slatecard">Platform View</h1>
 
       <div class="my-4 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel-quiet lg:flex-row lg:items-center lg:justify-between lg:gap-6 xl:px-6">
         <div class="flex min-w-0 items-center gap-4">
           <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-slatecard text-lg font-bold text-white">EW</span>
           <div class="min-w-0">
-            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Platform view</p>
-            <h2 class="mt-1 text-2xl font-black leading-tight text-slate-900">Teach HQ Platform</h2>
+            <h2 class="text-2xl font-black leading-tight text-slate-900">Teach HQ Platform</h2>
             <p class="mt-1 text-sm text-slate-500">128 customers · 8,462 users</p>
           </div>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <div class="inline-flex items-center gap-2.5 rounded-full bg-sky-50 px-3 py-2 text-sm font-semibold text-teachhq-dark"><span class="tabular-nums">82% active users</span></div>
           <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-teachhq px-5 py-3 text-sm font-bold text-white shadow-cta transition hover:-translate-y-px hover:bg-teachhq-dark hover:shadow-cta-hover focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-2 active:translate-y-0 active:shadow-cta-active">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6"/></svg>
             Add customer
@@ -858,9 +884,16 @@
 
 <script>
   function switchWorkspace(name){
+    var _widx={my:0,team:1,admin:2};
+    var prev=['my','team','admin'].filter(function(w){return document.getElementById('ws-'+w).style.display!=='none';})[0];
     ['my','team','admin'].forEach(function(w){
       document.getElementById('ws-'+w).style.display = (w===name ? '' : 'none');
     });
+    var seg=document.querySelector('#ws-'+name+' .ws-seg');
+    if(seg && prev && prev!==name){
+      seg.setAttribute('data-active', _widx[prev]);
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ seg.setAttribute('data-active', _widx[name]); }); });
+    }
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
@@ -892,33 +925,38 @@
   }
   // ===== Team scope switcher =====
   var SCOPE={
-    site:{eyebrow:'Site view',title:"All Saints' Catholic Primary School",meta:'1 site · 58 users · Lanchester',chip:"Site: All Saints' Catholic Primary",hm:'1 site',k:['3','6','4','1','48'],c:['2 users affected','2 due this week','7% of users','newly enrolled','83% of users'],bar:'83%'},
+    site:{eyebrow:'Site view',title:"All Saints' Catholic Primary School",meta:'58 users · Lanchester',chip:"Site: All Saints' Catholic Primary",hm:'1 site',k:['3','6','4','1','48'],c:['2 users affected','2 due this week','7% of users','newly enrolled','83% of users'],bar:'83%'},
     group:{eyebrow:'Group view',title:'Gateshead Primary Schools',meta:'8 sites · 612 users',chip:'Group: Gateshead Primaries (8)',hm:'8 sites',k:['23','54','38','7','498'],c:['across 4 sites','12 due this week','across 6 sites','3 newly enrolled','81% of users'],bar:'81%'},
     trust:{eyebrow:'Trust view',title:'Bishop Wilkinson Catholic Education Trust',meta:'48 schools · 3,940 users',chip:'Trust: All 48 schools',hm:'48 schools',k:['142','318','196','41','3,210'],c:["across 18 sites · top: St Mary's",'74 due this week','across 22 sites','12 newly enrolled','81% of users'],bar:'81%'}
   };
   function setScope(m){
+    var _sidx={team:0,site:1,group:2,trust:3};
     ['team','site','group','trust'].forEach(function(x){
-      document.getElementById('scopeBtn-'+x).className=(x===m)?'rounded-lg bg-white px-4 py-1.5 text-sm font-bold text-slatecard shadow-sm':'rounded-lg px-4 py-1.5 text-sm font-bold text-slate-500 hover:text-slatecard';
+      var b=document.getElementById('scopeBtn-'+x); if(b) b.classList.toggle('is-active', x===m);
       var el=document.getElementById('scopeSel-'+x); if(el) el.classList.toggle('hidden', x!==m);
     });
+    var _seg=document.getElementById('scopeSeg'); if(_seg) _seg.setAttribute('data-active', _sidx[m]);
     // Team = blank placeholder dashboard
     document.getElementById('teamBody').classList.toggle('hidden', m!=='team');
     document.getElementById('scopeBody').classList.toggle('hidden', m==='team');
+    // Training matrix only appears on the Site tab
+    document.getElementById('matrixSection').classList.toggle('hidden', m!=='site');
+    var _pt=document.getElementById('pageTitle'); if(_pt) _pt.textContent=({team:'Team View',site:'Site View',group:'Group View',trust:'Trust View'})[m]||'Site View';
     if(m==='team'){
-      document.getElementById('scopeChip').textContent='Team view';
+      (document.getElementById('scopeChip')||{}).textContent='Team view';
       return;
     }
     var s=SCOPE[m];
-    document.getElementById('scopeEyebrow').textContent=s.eyebrow;
+    (document.getElementById('scopeEyebrow')||{}).textContent=s.eyebrow;
     document.getElementById('scopeTitle').textContent=s.title;
     document.getElementById('scopeMeta').textContent=s.meta;
-    document.getElementById('scopeChip').textContent=s.chip;
-    document.getElementById('scopeHeadingMeta').textContent=s.hm;
+    (document.getElementById('scopeChip')||{}).textContent=s.chip;
+    (document.getElementById('scopeHeadingMeta')||{}).textContent=s.hm;
     for(var i=0;i<5;i++){document.getElementById('kn'+i).textContent=s.k[i];document.getElementById('kc'+i).textContent=s.c[i];}
     document.getElementById('knBar').style.width=s.bar;
   }
-  function selectSite(sel){var t=sel.options[sel.selectedIndex].text,p=t.split(' — ');document.getElementById('scopeTitle').textContent=p[0];document.getElementById('scopeMeta').textContent='1 site · 58 users'+(p[1]?' · '+p[1]:'');document.getElementById('scopeChip').textContent='Site: '+p[0];}
-  function selectGroup(sel){var t=sel.options[sel.selectedIndex].text;document.getElementById('scopeTitle').textContent=t;document.getElementById('scopeChip').textContent='Group: '+t;}
+  function selectSite(sel){var t=sel.options[sel.selectedIndex].text,p=t.split(' — ');document.getElementById('scopeTitle').textContent=p[0];document.getElementById('scopeMeta').textContent='58 users'+(p[1]?' · '+p[1]:'');(document.getElementById('scopeChip')||{}).textContent='Site: '+p[0];}
+  function selectGroup(sel){var t=sel.options[sel.selectedIndex].text;document.getElementById('scopeTitle').textContent=t;(document.getElementById('scopeChip')||{}).textContent='Group: '+t;}
 
   // ===== Training matrix =====
   var MX_ST={p:'passed',i:'inprogress',n:'notstarted',o:'overdue',d:'duesoon',f:'failed',x:'notassigned'};
@@ -1002,14 +1040,350 @@
     t.classList.toggle('mx-compact', d==='compact');
     var on='rounded-md bg-white px-3 py-1 font-bold text-slatecard shadow-sm';
     var off='rounded-md px-3 py-1 font-bold text-slate-500 hover:text-slatecard';
-    document.getElementById('mxDensity-comfortable').className=(d==='compact')?off:on;
-    document.getElementById('mxDensity-compact').className=(d==='compact')?on:off;
+    var cf=document.getElementById('mxDensity-comfortable'); if(cf) cf.className=(d==='compact')?off:on;
+    var cp=document.getElementById('mxDensity-compact'); if(cp) cp.className=(d==='compact')?on:off;
   }
+
+  // ===== Notifications drawer (Beamer-style UX, TeachHQ styling) =====
+  function toggleNotifications(){
+    var p=document.getElementById('notifPanel');
+    if(p.classList.contains('translate-x-full')) openNotifications(); else closeNotifications();
+  }
+  function openNotifications(){
+    closeChat();
+    document.getElementById('notifOverlay').classList.remove('opacity-0','pointer-events-none');
+    var pnl=document.getElementById('notifPanel'); pnl.classList.remove('translate-x-full'); pnl.classList.add('is-open');
+    document.documentElement.classList.add('overflow-hidden');
+  }
+  function closeNotifications(){
+    document.getElementById('notifOverlay').classList.add('opacity-0','pointer-events-none');
+    var pnl=document.getElementById('notifPanel'); pnl.classList.add('translate-x-full'); pnl.classList.remove('is-open');
+    document.documentElement.classList.remove('overflow-hidden');
+  }
+  function markAllNotifsRead(){
+    document.querySelectorAll('#notifList [data-unread]').forEach(function(el){
+      el.removeAttribute('data-unread');
+      el.classList.remove('bg-sky-50/60');
+      var d=el.querySelector('.notif-dot'); if(d) d.classList.add('hidden');
+    });
+    var b=document.getElementById('notifBadge'); if(b) b.classList.add('hidden');
+    var c=document.getElementById('notifUnreadCount'); if(c) c.textContent='0';
+  }
+  var NTAB_ON='flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-bold transition focus:outline-none text-teachhq bg-sky-50';
+  var NTAB_OFF='flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-bold transition focus:outline-none text-slate-400 hover:text-slatecard hover:bg-paper';
+  function switchNotifTab(name){
+    ['notifications','ideas','roadmap'].forEach(function(t){
+      var sec=document.getElementById('tab-'+t); if(sec) sec.classList.toggle('hidden', t!==name);
+      var btn=document.getElementById('ntab-'+t); if(btn) btn.className=(t===name)?NTAB_ON:NTAB_OFF;
+    });
+    var titles={notifications:'Notifications',ideas:'Ideas',roadmap:'Roadmap'};
+    var h=document.getElementById('notifTitle'); if(h) h.textContent=titles[name];
+    var sub=document.getElementById('notifSub'); if(sub) sub.classList.toggle('hidden', name!=='notifications');
+    var ctl=document.getElementById('notifReadCtl'); if(ctl) ctl.classList.toggle('hidden', name!=='notifications');
+  }
+  function voteIdea(btn){
+    var sp=btn.querySelector('span'); var n=parseInt(sp.textContent,10)||0;
+    if(btn.getAttribute('data-voted')){ btn.removeAttribute('data-voted'); sp.textContent=n-1; btn.classList.remove('border-teachhq','text-teachhq','bg-sky-50'); }
+    else { btn.setAttribute('data-voted','1'); sp.textContent=n+1; btn.classList.add('border-teachhq','text-teachhq','bg-sky-50'); }
+  }
+  // ===== Help chat drawer (Freshchat-style) =====
+  function toggleChat(){
+    var p=document.getElementById('chatPanel');
+    if(p.classList.contains('translate-x-full')) openChat(); else closeChat();
+  }
+  function openChat(){
+    closeNotifications();
+    document.getElementById('chatOverlay').classList.remove('opacity-0','pointer-events-none');
+    document.getElementById('chatPanel').classList.remove('translate-x-full');
+    document.documentElement.classList.add('overflow-hidden');
+    setTimeout(function(){ var i=document.getElementById('chatInput'); if(i) i.focus(); }, 480);
+  }
+  function closeChat(){
+    var ov=document.getElementById('chatOverlay'); if(!ov) return;
+    ov.classList.add('opacity-0','pointer-events-none');
+    document.getElementById('chatPanel').classList.add('translate-x-full');
+    if(document.getElementById('notifPanel').classList.contains('translate-x-full'))
+      document.documentElement.classList.remove('overflow-hidden');
+  }
+  function appendChat(text, who){
+    var body=document.getElementById('chatBody'); var wrap=document.createElement('div');
+    if(who==='user'){
+      wrap.className='flex justify-end';
+      var b=document.createElement('div');
+      b.className='max-w-[80%] rounded-2xl rounded-tr-sm bg-teachhq px-3.5 py-2.5 text-[13px] leading-snug text-white shadow-sm';
+      b.textContent=text; wrap.appendChild(b);
+    } else {
+      wrap.className='flex gap-2';
+      wrap.innerHTML='<span class="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-teachhq text-[10px] font-black text-white">TH</span>';
+      var b=document.createElement('div');
+      b.className='max-w-[80%] rounded-2xl rounded-tl-sm bg-white px-3.5 py-2.5 text-[13px] leading-snug text-slatecard shadow-panel-quiet';
+      b.textContent=text; wrap.appendChild(b);
+    }
+    body.appendChild(wrap); body.scrollTop=body.scrollHeight;
+  }
+  function chatTyping(on){
+    var body=document.getElementById('chatBody'); var ex=document.getElementById('chatTyping');
+    if(on){ if(ex) return; var w=document.createElement('div'); w.id='chatTyping'; w.className='flex gap-2';
+      w.innerHTML='<span class="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-teachhq text-[10px] font-black text-white">TH</span><div class="rounded-2xl rounded-tl-sm bg-white px-3.5 py-3 shadow-panel-quiet"><span class="chat-typing"><i></i><i></i><i></i></span></div>';
+      body.appendChild(w); body.scrollTop=body.scrollHeight;
+    } else if(ex){ ex.remove(); }
+  }
+  function chatBotReply(text){
+    var t=(text||'').toLowerCase(), r;
+    if(t.indexOf('certif')>=0) r='You can download your certificates from “My Certificates” in the left menu. Want me to take you there?';
+    else if(t.indexOf('password')>=0||t.indexOf('reset')>=0) r='No problem — I can send a password reset link to your registered email. Shall I do that?';
+    else if(t.indexOf('course')>=0||t.indexOf('enrol')>=0||t.indexOf('training')>=0) r='Happy to help with courses. Are you looking to enrol, resume, or find an overdue course?';
+    else if(t.indexOf('problem')>=0||t.indexOf('issue')>=0||t.indexOf('bug')>=0||t.indexOf('report')>=0) r='Sorry to hear that. Please describe what happened and I’ll raise a ticket with our support team.';
+    else r='Thanks, Emma. A support specialist will pick this up shortly. Is there anything else I can help with?';
+    chatTyping(true);
+    setTimeout(function(){ chatTyping(false); appendChat(r,'bot'); }, 1000);
+  }
+  function sendChat(e){
+    e.preventDefault();
+    var i=document.getElementById('chatInput'); var v=(i.value||'').trim(); if(!v) return;
+    appendChat(v,'user'); i.value='';
+    var q=document.getElementById('chatQuick'); if(q) q.classList.add('hidden');
+    chatBotReply(v);
+  }
+  function chatQuickReply(text){
+    appendChat(text,'user');
+    var q=document.getElementById('chatQuick'); if(q) q.classList.add('hidden');
+    chatBotReply(text);
+  }
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeNotifications(); closeChat(); } });
+
+  // sticky header surface state on scroll
+  (function(){
+    var h=document.getElementById('appHeader'); if(!h) return;
+    var onScroll=function(){ h.classList.toggle('is-scrolled', (window.scrollY||document.documentElement.scrollTop) > 14); };
+    onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+  })();
 
   // init
   switchWorkspace('my');
   setScope('trust');
-  mxAddCourses();
 </script>
+  <!-- ===================== NOTIFICATIONS DRAWER (Beamer-style UX) ===================== -->
+  <div id="notifOverlay" onclick="closeNotifications()" class="fixed inset-0 z-[70] bg-slate-900/40 backdrop-blur-[2px] opacity-0 pointer-events-none transition-opacity duration-[480ms] ease-out"></div>
+  <aside id="notifPanel" aria-label="Notifications" class="fixed right-0 top-0 z-[80] flex h-full w-[400px] max-w-[90vw] translate-x-full flex-col bg-white shadow-2xl transition-transform duration-[480ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
+    <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+      <div>
+        <h2 id="notifTitle" class="text-base font-black text-slatecard">Notifications</h2>
+        <p id="notifSub" class="text-[12px] text-slate-500"><span id="notifUnreadCount">4</span> unread</p>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="notifReadCtl" onclick="markAllNotifsRead()" class="rounded-lg px-2.5 py-1.5 text-[12px] font-bold text-teachhq hover:bg-sky-50">Mark all read</button>
+        <button onclick="closeNotifications()" aria-label="Close notifications" class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-paper text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto">
+      <div id="tab-notifications" data-tab>
+      <div id="notifList">
+        <button data-unread class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper bg-sky-50/60">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-red-50 text-[#E5484D]"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-[#E5484D]">Action needed</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">Food Allergy Awareness is overdue</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">Your refresher was due 14 days ago. Complete it to stay compliant.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">2 hours ago</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq"></span>
+        </button>
+        <button data-unread class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper bg-sky-50/60">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-amber-50 text-amber-600"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-amber-600">Reminder</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">Level 2 Food Safety expires in 7 days</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">Renew before 2 July to keep your certification active.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">Yesterday</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq"></span>
+        </button>
+        <button data-unread class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper bg-sky-50/60">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sky-50 text-teachhq-dark"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-teachhq-dark">New course</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">New course available: HACCP Principles</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">Just added to your Course Library. Enrol to get ahead.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">2 days ago</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq"></span>
+        </button>
+        <button data-unread class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper bg-sky-50/60">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-emerald-600">Achievement</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">Certificate earned: Allergen Awareness</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">Well done! Your Natasha’s Law certificate is ready to download.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">3 days ago</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq"></span>
+        </button>
+        <button class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-sky-50 text-teachhq-dark"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-teachhq-dark">Assignment</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">Your manager assigned 2 new courses</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">COSHH Essentials and Manual Handling were added to your plan.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">4 days ago</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq hidden"></span>
+        </button>
+        <button class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-amber-50 text-amber-600"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-amber-600">Reminder</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">Scheduled training tomorrow</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">Fire Safety Awareness at 10:00. Add it to your calendar.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">5 days ago</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq hidden"></span>
+        </button>
+        <button class="group flex w-full gap-3 border-b border-slate-100 px-5 py-4 text-left transition hover:bg-paper">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-paper text-slate-500"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>
+          <span class="min-w-0 flex-1">
+            <span class="text-[10px] font-black uppercase tracking-wide text-slate-500">Announcement</span>
+            <span class="mt-0.5 block text-sm font-bold text-slatecard">All courses are now free of charge</span>
+            <span class="mt-0.5 block text-[13px] leading-snug text-slate-500">Browse the full Course Library and enrol at no cost.</span>
+            <span class="mt-1 block text-[11px] text-slate-400">1 week ago</span>
+          </span>
+          <span class="notif-dot mt-1.5 h-2 w-2 flex-none rounded-full bg-teachhq hidden"></span>
+        </button>
+      </div>
+      </div>
+      <div id="tab-ideas" data-tab class="hidden">
+        <div class="flex items-center justify-between gap-3 border-b border-slate-100 bg-paper px-5 py-3">
+          <p class="text-[12px] text-slate-500">Vote on what we build next.</p>
+          <button class="rounded-lg bg-teachhq px-3 py-1.5 text-[12px] font-bold text-white transition hover:bg-teachhq-dark">Suggest an idea</button>
+        </div>
+        <div class="flex gap-3 border-b border-slate-100 px-5 py-4">
+          <button onclick="voteIdea(this)" class="flex h-14 w-12 flex-none flex-col items-center justify-center gap-0.5 rounded-lg border border-slate-200 text-slate-500 transition hover:border-teachhq hover:text-teachhq"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg><span class="text-sm font-black tabular-nums">124</span></button>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-bold text-slatecard">Offline mode for mobile learning</div>
+            <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Let staff download courses and complete training without a connection.</p>
+            <div class="mt-1.5 flex items-center gap-2 text-[11px]"><span class="rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 font-bold">Planned</span><span class="text-slate-400">· 18 comments</span></div>
+          </div>
+        </div>
+        <div class="flex gap-3 border-b border-slate-100 px-5 py-4">
+          <button onclick="voteIdea(this)" class="flex h-14 w-12 flex-none flex-col items-center justify-center gap-0.5 rounded-lg border border-slate-200 text-slate-500 transition hover:border-teachhq hover:text-teachhq"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg><span class="text-sm font-black tabular-nums">98</span></button>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-bold text-slatecard">Bulk-assign courses to a whole site</div>
+            <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Assign training to every learner at a site or group in one action.</p>
+            <div class="mt-1.5 flex items-center gap-2 text-[11px]"><span class="rounded-full bg-sky-50 text-teachhq-dark px-2 py-0.5 font-bold">Under review</span><span class="text-slate-400">· 11 comments</span></div>
+          </div>
+        </div>
+        <div class="flex gap-3 border-b border-slate-100 px-5 py-4">
+          <button onclick="voteIdea(this)" class="flex h-14 w-12 flex-none flex-col items-center justify-center gap-0.5 rounded-lg border border-slate-200 text-slate-500 transition hover:border-teachhq hover:text-teachhq"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg><span class="text-sm font-black tabular-nums">76</span></button>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-bold text-slatecard">Downloadable wallet certificates</div>
+            <p class="mt-0.5 text-[13px] leading-snug text-slate-500">A printable, pocket-sized proof of certification for inspections.</p>
+            <div class="mt-1.5 flex items-center gap-2 text-[11px]"><span class="rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 font-bold">Planned</span><span class="text-slate-400">· 7 comments</span></div>
+          </div>
+        </div>
+        <div class="flex gap-3 border-b border-slate-100 px-5 py-4">
+          <button onclick="voteIdea(this)" class="flex h-14 w-12 flex-none flex-col items-center justify-center gap-0.5 rounded-lg border border-slate-200 text-slate-500 transition hover:border-teachhq hover:text-teachhq"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg><span class="text-sm font-black tabular-nums">54</span></button>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-bold text-slatecard">Dark mode for the dashboard</div>
+            <p class="mt-0.5 text-[13px] leading-snug text-slate-500">An easier-on-the-eyes theme for evening admin work.</p>
+            <div class="mt-1.5 flex items-center gap-2 text-[11px]"><span class="rounded-full bg-sky-50 text-teachhq-dark px-2 py-0.5 font-bold">Under review</span><span class="text-slate-400">· 5 comments</span></div>
+          </div>
+        </div>
+        <div class="flex gap-3 border-b border-slate-100 px-5 py-4">
+          <button onclick="voteIdea(this)" class="flex h-14 w-12 flex-none flex-col items-center justify-center gap-0.5 rounded-lg border border-slate-200 text-slate-500 transition hover:border-teachhq hover:text-teachhq"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg><span class="text-sm font-black tabular-nums">41</span></button>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-bold text-slatecard">Reminders via WhatsApp</div>
+            <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Send overdue and due-soon nudges through WhatsApp.</p>
+            <div class="mt-1.5 flex items-center gap-2 text-[11px]"><span class="rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-bold">New</span><span class="text-slate-400">· 3 comments</span></div>
+          </div>
+        </div>
+      </div>
+      <div id="tab-roadmap" data-tab class="hidden">
+        <div class="sticky top-0 z-10 bg-white px-5 pt-4 pb-2">
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-teachhq"><span class="h-2 w-2 rounded-full bg-teachhq"></span>In progress</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">Bulk course assignments</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Assign training to an entire site or group in one click.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Manager tools</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">HACCP course series</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">A new multi-part HACCP pathway for catering teams.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Content</span>
+        </div>
+        <div class="sticky top-0 z-10 bg-white px-5 pt-4 pb-2">
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-amber-600"><span class="h-2 w-2 rounded-full bg-amber-500"></span>Planned</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">Offline mobile learning</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Download and complete courses without a connection.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Mobile</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">Wallet certificates</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Pocket-sized, printable proof of certification.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Certificates</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">HR system integrations</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Sync learners and records with your HR platform via API.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Integrations</span>
+        </div>
+        <div class="sticky top-0 z-10 bg-white px-5 pt-4 pb-2">
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-600"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Live</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">Natasha’s Law allergen module</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">Updated allergen training aligned to current regulations.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Compliance</span>
+        </div>
+        <div class="mx-5 mb-2.5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-panel-quiet">
+          <div class="text-sm font-bold text-slatecard">Site compliance dashboard</div>
+          <p class="mt-0.5 text-[13px] leading-snug text-slate-500">At-a-glance overdue, due-soon and risk by site.</p>
+          <span class="mt-2 inline-block rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-teachhq-dark">Analytics</span>
+        </div>
+        <div class="h-3"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 border-t border-slate-100">
+      <button id="ntab-notifications" onclick="switchNotifTab('notifications')" class="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-bold transition focus:outline-none text-teachhq bg-sky-50"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Notifications</button>
+      <button id="ntab-ideas" onclick="switchNotifTab('ideas')" class="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-bold transition focus:outline-none text-slate-400 hover:text-slatecard hover:bg-paper"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.6 4.6 0 0 1 8.91 14"/></svg>Ideas</button>
+      <button id="ntab-roadmap" onclick="switchNotifTab('roadmap')" class="flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-bold transition focus:outline-none text-slate-400 hover:text-slatecard hover:bg-paper"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>Roadmap</button>
+    </div>
+  </aside>
+
+  <!-- ===================== HELP CHAT DRAWER (Freshchat UX, Beamer-style drawer) ===================== -->
+  <div id="chatOverlay" onclick="closeChat()" class="fixed inset-0 z-[70] bg-slate-900/40 backdrop-blur-[2px] opacity-0 pointer-events-none transition-opacity duration-[480ms] ease-out"></div>
+  <aside id="chatPanel" aria-label="Help chat" class="fixed right-0 top-0 z-[80] flex h-full w-[400px] max-w-[90vw] translate-x-full flex-col bg-white shadow-2xl transition-transform duration-[480ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform">
+    <div class="flex items-start justify-between gap-3 bg-teachhq px-5 py-4 text-white">
+      <div class="flex items-center gap-3">
+        <span class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white/20 text-sm font-black">TH</span>
+        <div>
+          <h2 class="text-base font-black leading-tight">TeachHQ Support</h2>
+          <p class="mt-0.5 text-[12px] text-white/85"><span class="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-300 align-middle"></span>We typically reply in a few minutes</p>
+        </div>
+      </div>
+      <button onclick="closeChat()" aria-label="Close chat" class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-white/15 text-white transition hover:bg-white/25 focus:outline-none"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div id="chatBody" class="flex-1 space-y-3 overflow-y-auto bg-paper px-4 py-4">
+      <div class="flex gap-2">
+        <span class="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-teachhq text-[10px] font-black text-white">TH</span>
+        <div class="max-w-[80%] rounded-2xl rounded-tl-sm bg-white px-3.5 py-2.5 text-[13px] leading-snug text-slatecard shadow-panel-quiet">Hi Emma, I’m the TeachHQ assistant. How can I help with your training today?</div>
+      </div>
+      <div id="chatQuick" class="flex flex-wrap gap-2 pl-9">
+          <button onclick="chatQuickReply('Course help')" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slatecard transition hover:border-teachhq hover:text-teachhq">Course help</button>
+          <button onclick="chatQuickReply('My certificates')" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slatecard transition hover:border-teachhq hover:text-teachhq">My certificates</button>
+          <button onclick="chatQuickReply('Reset a password')" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slatecard transition hover:border-teachhq hover:text-teachhq">Reset a password</button>
+          <button onclick="chatQuickReply('Report a problem')" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slatecard transition hover:border-teachhq hover:text-teachhq">Report a problem</button>
+        </div>
+    </div>
+    <div class="border-t border-slate-100 bg-white p-3">
+      <form onsubmit="sendChat(event)" class="flex items-center gap-2">
+        <input id="chatInput" type="text" autocomplete="off" placeholder="Type your message…" class="min-w-0 flex-1 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slatecard placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teachhq">
+        <button type="submit" aria-label="Send message" class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-full bg-teachhq text-white transition hover:bg-teachhq-dark focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+      </form>
+    </div>
+  </aside>
+
 </body>
 </html>
