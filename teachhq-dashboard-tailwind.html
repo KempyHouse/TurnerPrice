@@ -1028,7 +1028,7 @@
   }
   function mxCourseHeadCell(ci){
     var c=MX_COURSES[ci];
-    var dot = (c.rec && MXX.density==='comfortable') ? '<div class="mt-1 flex justify-center"><span class="h-2 w-2 rounded-full bg-teachhq" title="Recurring'+(c.rf?' — '+c.rf+' refresh':'')+'"></span></div>' : '';
+    var dot = (MXX.density==='comfortable') ? '<div class="mt-1 flex justify-center"><span class="h-2 w-2 rounded-full '+(c.rec?'bg-teachhq':'bg-transparent')+'"'+(c.rec?' title="Recurring'+(c.rf?' — '+c.rf+' refresh':'')+'"':'')+'></span></div>' : '';
     var t=c.f+(c.rec?' · recurring'+(c.rf?' ('+c.rf+')':''):'');
     return '<th class="mx-course border-b border-slate-200 px-1 py-3 text-center" title="'+t+'"><div class="mx-clabel">'+c.s+'</div>'+dot+'</th>';
   }
