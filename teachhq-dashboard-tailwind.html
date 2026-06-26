@@ -119,7 +119,7 @@
     <div class="ml-auto flex items-center gap-2.5 lg:ml-0">
       <button id="chatBtn" onclick="toggleChat()" aria-label="Help chat" class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-paper text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
       <button id="notifBell" onclick="toggleNotifications()" aria-label="Notifications" class="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-paper text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-teachhq focus:ring-offset-1"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#E5484D] px-1 text-[9px] font-bold leading-none text-white" id="notifBadge">4</span></button>
-      <span class="flex h-9 w-9 items-center justify-center rounded-full bg-slatecard text-[13px] font-bold text-white">EW</span>
+      <span class="flex h-9 w-9 flex-none overflow-hidden rounded-full"><svg viewBox="0 0 56 56" class="h-full w-full" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" fill="#e6f3fb"/><path d="M8 56C8 43 17 37 28 37s20 6 20 19z" fill="#3D515B"/><rect x="24.5" y="30" width="7" height="9" rx="3" fill="#eab38f"/><circle cx="28" cy="21" r="10" fill="#f3c9a8"/><path d="M18 21C18 11 38 11 38 21 38 16.5 34 13.5 28 13.5S18 16.5 18 21z" fill="#5b3b22"/></svg></span>
     </div>
   </header>
 
@@ -161,7 +161,7 @@
       <!-- identity / action header -->
       <div class="my-4 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel-quiet lg:flex-row lg:items-center lg:justify-between lg:gap-6 xl:px-6">
         <div class="flex min-w-0 items-center gap-4">
-          <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-slatecard text-lg font-bold text-white">EW</span>
+          <span class="flex h-14 w-14 flex-none overflow-hidden rounded-full"><svg viewBox="0 0 56 56" class="h-full w-full" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" fill="#e6f3fb"/><path d="M8 56C8 43 17 37 28 37s20 6 20 19z" fill="#3D515B"/><rect x="24.5" y="30" width="7" height="9" rx="3" fill="#eab38f"/><circle cx="28" cy="21" r="10" fill="#f3c9a8"/><path d="M18 21C18 11 38 11 38 21 38 16.5 34 13.5 28 13.5S18 16.5 18 21z" fill="#5b3b22"/></svg></span>
           <div class="min-w-0">
             <h2 class="text-2xl font-black leading-tight text-slate-900">Emma Wilkinson</h2>
             <p class="mt-1 text-sm text-slate-500">Catering Manager</p>
@@ -334,7 +334,7 @@
 
       <div class="my-4 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-panel-quiet lg:flex-row lg:items-center lg:justify-between lg:gap-6 xl:px-6">
         <div class="flex min-w-0 items-center gap-4">
-          <span class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-slatecard text-lg font-bold text-white">EW</span>
+          <span id="scopeAvatar" class="flex h-14 w-14 flex-none overflow-hidden rounded-full"><svg viewBox="0 0 56 56" class="h-full w-full" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" fill="#1f3a5f"/><path d="M28 12l12 4v12c0 8-6 13-12 15-6-2-12-7-12-15V16z" fill="#fff"/><rect x="26.4" y="20" width="3.2" height="15" rx="1.2" fill="#1f3a5f"/><rect x="22" y="24.4" width="12" height="3.2" rx="1.2" fill="#1f3a5f"/></svg></span>
           <div class="min-w-0">
             <h2 id="scopeTitle" class="text-2xl font-black leading-tight text-slate-900">Bishop Wilkinson Catholic Education Trust</h2>
             <p id="scopeMeta" class="mt-1 text-sm text-slate-500">48 schools · 3,940 users</p>
@@ -928,6 +928,8 @@
     group:{eyebrow:'Group view',title:'Gateshead Primary Schools',meta:'8 sites · 612 users',chip:'Group: Gateshead Primaries (8)',hm:'8 sites',k:['23','54','38','7','498'],c:['across 4 sites','12 due this week','across 6 sites','3 newly enrolled','81% of users'],bar:'81%'},
     trust:{eyebrow:'Trust view',title:'Bishop Wilkinson Catholic Education Trust',meta:'48 schools · 3,940 users',chip:'Trust: All 48 schools',hm:'48 schools',k:['142','318','196','41','3,210'],c:["across 18 sites · top: St Mary's",'74 due this week','across 22 sites','12 newly enrolled','81% of users'],bar:'81%'}
   };
+  var SVG_SCHOOL='<svg viewBox="0 0 56 56" class="h-full w-full" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" fill="#0d7d5a"/><rect x="26.7" y="11" width="2.6" height="9" rx="1" fill="#fff"/><rect x="23.6" y="14.2" width="9" height="2.6" rx="1" fill="#fff"/><path d="M13 27c5-3 10-3 15 0 5-3 10-3 15 0v13c-5-3-10-3-15 0-5-3-10-3-15 0z" fill="#fff"/><path d="M28 27v13" stroke="#0d7d5a" stroke-width="1.6"/></svg>';
+  var SVG_TRUST='<svg viewBox="0 0 56 56" class="h-full w-full" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" fill="#1f3a5f"/><path d="M28 12l12 4v12c0 8-6 13-12 15-6-2-12-7-12-15V16z" fill="#fff"/><rect x="26.4" y="20" width="3.2" height="15" rx="1.2" fill="#1f3a5f"/><rect x="22" y="24.4" width="12" height="3.2" rx="1.2" fill="#1f3a5f"/></svg>';
   function setScope(m){
     var _sidx={team:0,site:1,group:2,trust:3};
     ['team','site','group','trust'].forEach(function(x){
@@ -941,6 +943,7 @@
     // Training matrix only appears on the Site tab
     document.getElementById('matrixSection').classList.toggle('hidden', m!=='site');
     var _pt=document.getElementById('pageTitle'); if(_pt) _pt.textContent=({team:'Team View',site:'Site View',group:'Group View',trust:'Trust View'})[m]||'Site View';
+    var _sa=document.getElementById('scopeAvatar'); if(_sa) _sa.innerHTML=(m==='site'||m==='team')?SVG_SCHOOL:SVG_TRUST;
     if(m==='team'){
       (document.getElementById('scopeChip')||{}).textContent='Team view';
       return;
