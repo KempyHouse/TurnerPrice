@@ -81,10 +81,6 @@
   .seg--paper{background:var(--color-paper);}
   .seg--paper .seg__pill{background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.06),0 4px 10px rgba(16,24,40,.08);}
   .seg--paper>button.is-active{color:var(--color-slatecard);}
-  .seg--line{background:#fff;border:1px solid #e2e8f0;border-radius:8px;}
-  .seg--line .seg__pill{background:#eef2f7;box-shadow:none;border-radius:5px;}
-  .seg--line>button{display:flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0;}
-  .seg--line>button.is-active{color:var(--color-slatecard);}
   @media (prefers-reduced-motion: reduce){ .seg__pill{transition:none} }
   body{font-family:"Lato",system-ui,sans-serif;}
   #mxTable{table-layout:fixed;width:100%;min-width:1180px;}
@@ -491,7 +487,7 @@
             <p class="mt-0.5 text-[13px] text-slate-500">Required training across the selected scope &mdash; who needs attention.</p>
           </div>
           <div class="flex items-center gap-2">
-            <div id="mxDensitySeg" class="seg seg--line h-[38px] text-[13px]" style="--segs:2" data-active="0">
+            <div id="mxDensitySeg" class="seg seg--paper text-[13px]" style="--segs:2" data-active="0">
               <span class="seg__pill"></span>
               <button class="is-active px-3 py-1.5" onclick="mxSetDensity('comfortable')">Comfortable</button>
               <button class="px-3 py-1.5" onclick="mxSetDensity('compact')">Compact</button>
@@ -518,7 +514,7 @@
           </div>
           <div class="hidden items-center gap-2 md:flex">
             <span class="text-[11px] font-bold uppercase tracking-wide text-slate-400">View</span>
-            <div id="mxViewSeg" class="seg seg--line h-[38px] text-[13px]" style="--segs:3" data-active="0">
+            <div id="mxViewSeg" class="seg seg--paper text-[13px]" style="--segs:3" data-active="0">
               <span class="seg__pill"></span>
               <button class="is-active px-3 py-1.5" onclick="mxSetView('learner')">Learner</button>
               <button class="px-3 py-1.5" onclick="mxSetView('course')">Course</button>
